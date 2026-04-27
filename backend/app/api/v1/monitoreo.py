@@ -128,8 +128,23 @@ def get_fallas_monitoreo(
         q = q.filter(Falla.proyecto_id == proyecto_id)
 
     fallas = q.order_by(Falla.created_at.desc()).all()
-    return {"ok": True, "faults": [_falla_to_fault(f) for f in fallas]}
-
+    results = []
+    for f in fallas:
+        try:
+            results.append(_falla_to_fault(f))
+        except Exception:
+            pass
+    return {"ok": True, "faults": results}
+@router.get("/debug")
+def debug_monitoreo(db: Session = Depends(get_db), _=Depends(get_current_user)):
+    import traceback
+    try:
+        count = db.query(Falla).count()
+        falla = db.query(Falla).options(*_FALLA_EAGER).first()
+        result = _falla_to_fault(falla) if falla else None
+        return {"ok": True, "count": count, "primera_falla": result}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "trace": traceback.format_exc()}
 
 # ── POST /monitoreo/fallas/save ───────────────────────────────────────────────
 @router.post("/fallas/save")
