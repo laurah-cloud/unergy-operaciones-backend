@@ -722,7 +722,30 @@ document.addEventListener('DOMContentLoaded', function() {
   /* cargar datos */
   loadCatalog();
   loadFaults();
+  loadProyectosFromDB();
 });
+
+function loadProyectosFromDB() {
+  _apiFetch('GET', '/api/v1/monitoreo/proyectos').then(function(res) {
+    if (!res || !Array.isArray(res.proyectos) || !res.proyectos.length) return;
+    PROJS = res.proyectos;
+    renderSelects();
+    var detalle = res.proyectos_detalle || res.proyectos.map(function(n) { return {nombre: n}; });
+    ['gen-proj', 'inf-proj', 'fmo-proj'].forEach(function(sid) {
+      var el = document.getElementById(sid);
+      if (!el) return;
+      var cur = el.value;
+      var html = '<option value="">Selecciona proyecto…</option>';
+      detalle.forEach(function(p) { html += '<option value="' + esc(p.nombre) + '">' + esc(p.nombre) + '</option>'; });
+      el.innerHTML = html;
+      if (cur) el.value = cur;
+    });
+    toast('✓ ' + PROJS.length + ' proyectos cargados desde la base de datos', 3000);
+  }).catch(function(e) {
+    console.warn('[Bridge] proyectos no disponibles desde BD:', e);
+  });
+}
+/* ════════════════════════════════════════════════════════════════ */
 /* ════════════════════════════════════════════════════════════════ */
 
 var SCRIPT_URL="" /* neutralizado por bridge */;
