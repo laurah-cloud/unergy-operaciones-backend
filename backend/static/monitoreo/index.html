@@ -720,9 +720,10 @@ document.addEventListener('DOMContentLoaded', function() {
   saveSession('monitor', user.email, user.nombre, []);
   try { applyRole(); } catch(e) {}
   /* cargar datos */
-  loadCatalog();
+    loadCatalog();
+  _loadCatIds();
   loadFaults();
-});
+  loadProyectosFromDB();
 /* ════════════════════════════════════════════════════════════════ */
 
 var SCRIPT_URL="" /* neutralizado por bridge */;
@@ -1146,7 +1147,7 @@ function hideLoader(){document.getElementById("loader").style.display="none";}
 function apiGet(p,timeout){ return _apiFetch('GET', '/api/v1/monitoreo/_legacy?action='+(p.action||''), p); }
 function apiPost(body){ return _apiFetch('POST', '/api/v1/monitoreo/_legacy', body); }
 /* ══ CARGAR FALLAS ══ */
-function loadFaults(){
+function loadFaults_legacy(){
   setSync("spin","Sincronizando…");
   _apiFetch('GET','/api/v1/monitoreo/fallas').then(function(res){
     if(res&&res.ok&&res.faults){
@@ -1164,7 +1165,7 @@ function loadFaults(){
   });
 }
 /* ══ GUARDAR ══ */
-function serverSave(f,cb){
+function serverSave_legacy(f,cb){
   setSync("spin","Guardando…");
   var fdd=fd(f.code)||{};
   var cleanRes=(f.res&&f.res.trim()&&f.res.length>3&&!/^\d/.test(f.res)&&
@@ -1196,7 +1197,7 @@ function serverSave(f,cb){
     if(cb)cb(false);
   });
 }
-function serverDel(id){
+function serverDel_legacy(id){
   _apiFetch('POST','/api/v1/monitoreo/fallas/delete',{id:id}).then(function(r){
     setSync(r&&r.ok?"ok":"err",r&&r.ok?"Eliminado ✓":"Error al eliminar");
   }).catch(function(e){
